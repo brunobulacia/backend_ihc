@@ -6,11 +6,7 @@ async function bootstrap() {
 
   // Configuración CORS más permisiva
   app.enableCors({
-    origin: [
-      'https://dclassmigrator.vercel.app',
-      'http://localhost:3000',
-      'http://localhost:5173',
-    ],
+    origin: ['*'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -19,7 +15,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-  const port = process.env.PORT || 4000;
+  const port = process.env.PORT || 8080;
   await app.listen(port, '0.0.0.0');
 
   console.log(`🚀 Application is running on: http://0.0.0.0:${port}`);
