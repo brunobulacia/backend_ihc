@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateProductoDto } from './dto/create-producto.dto';
 import { UpdateProductoDto } from './dto/update-producto.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -37,5 +37,40 @@ export class ProductosService {
       where: { id, isActive: true },
       data: { isActive: false },
     });
+  }
+
+  //REALIZAR COMPRA SERVICES
+  async verificarProductosYStock(
+    productos: { productoId: string; cantidad: number }[],
+  ) {
+    const productIds = productos.map((producto) => producto.productoId);
+    const foundProducts = await this.prismaService.producto.findMany({
+      where: {
+        id: { in: productIds },
+        isActive: true,
+      },
+    });
+
+    if (foundProducts.length !== productIds.length) {
+      throw new NotFoundException(
+        'Algunos productos no existen o no están disponibles',
+      );
+    }
+
+    // Verificar si cantidad no sobrepasa el stock disponible
+    const productosConStock = foundProducts.filter((producto) => {
+      const productoEnPedido = productos.find(
+        (p) => p.productoId === producto.id,
+      );
+      return producto.stock >= (productoEnPedido?.cantidad || 0);
+    });
+
+    if (productosConStock.length !== foundProducts.length) {
+      throw new NotFoundException(
+        'Algunos productos no tienen suficiente stock',
+      );
+    }
+
+    return productos;
   }
 }
