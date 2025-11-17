@@ -7,12 +7,145 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+//ENUMs
+enum Metodo {
+  TARJETA_DEBITO
+  EFECTIVO
+  QR
+}
+
+enum EstadoVenta {
+  PENDIENTE
+  COMPLETADA
+  CANCELADA
+}
+
+enum EstadoPago {
+  PENDIENTE
+  COMPLETADO
+  FALLIDO
+}
+
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  username  String   @unique
+  id        String     @id @default(uuid())
+  email     String     @unique
+  username  String     @unique
   password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  isActive  Boolean  @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  isActive  Boolean    @default(true)
+  direccion Direccion?
+  ventas    Ventas[]
+  carrito   Carrito[]
+}
+
+model Direccion {
+  id         String   @id @default(uuid())
+  calle      String
+  numero     String
+  referencia String
+  zona       String
+  latitud    Float?
+  longitud   Float?
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Ventas {
+  id            String         @id @default(uuid())
+  estado        EstadoVenta
+  total         Float
+  fechaVenta    DateTime       @default(now())
+  userId        String
+  user          User           @relation(fields: [userId], references: [id])
+  pago          Pago?
+  detalleVentas DetalleVenta[]
+  isActive      Boolean        @default(true)
+}
+
+model Pago {
+  id         String       @id @default(uuid())
+  estado     EstadoPago
+  monto      Float
+  fechaPago  DateTime     @default(now())
+  ventaId    String       @unique
+  metodoPago MetodoPago[]
+  venta      Ventas       @relation(fields: [ventaId], references: [id])
+  isActive   Boolean      @default(true)
+}
+
+model MetodoPago {
+  id        String  @id @default(uuid())
+  proveedor String
+  detalles  String
+  metodo    Metodo
+  pagoId    String
+  pago      Pago    @relation(fields: [pagoId], references: [id])
+  isActive  Boolean @default(true)
+}
+
+model Producto {
+  id                 String              @id @default(uuid())
+  nombre             String
+  descripcion        String
+  precio             Float
+  stock              Int
+  itemCarrito        ItemCarrito[]
+  detalleVentas      DetalleVenta[]
+  productoCategorias ProductoCategoria[]
+  isActive           Boolean             @default(true)
+}
+
+model Carrito {
+  id          String        @id @default(uuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  itemCarrito ItemCarrito[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  isActive    Boolean       @default(true)
+}
+
+model ItemCarrito {
+  id         String   @id @default(uuid())
+  cantidad   Int
+  productoId String
+  producto   Producto @relation(fields: [productoId], references: [id])
+  carritoId  String
+  carrito    Carrito  @relation(fields: [carritoId], references: [id])
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model DetalleVenta {
+  id         String   @id @default(uuid())
+  cantidad   Int
+  precioUnit Float
+  ventaId    String
+  venta      Ventas   @relation(fields: [ventaId], references: [id])
+  productoId String
+  producto   Producto @relation(fields: [productoId], references: [id])
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Categoria {
+  id                 String              @id @default(uuid())
+  nombre             String              @unique
+  descripcion        String
+  isActive           Boolean             @default(true)
+  productoCategorias ProductoCategoria[]
+}
+
+model ProductoCategoria {
+  id          String    @id @default(uuid())
+  productoId  String
+  producto    Producto  @relation(fields: [productoId], references: [id])
+  categoriaId String
+  categoria   Categoria @relation(fields: [categoriaId], references: [id])
+  isActive    Boolean   @default(true)
 }
