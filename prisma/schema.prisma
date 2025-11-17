@@ -66,14 +66,15 @@ model Ventas {
 }
 
 model Pago {
-  id         String       @id @default(uuid())
-  estado     EstadoPago
-  monto      Float
-  fechaPago  DateTime     @default(now())
-  ventaId    String       @unique
-  metodoPago MetodoPago[]
-  venta      Ventas       @relation(fields: [ventaId], references: [id])
-  isActive   Boolean      @default(true)
+  id           String     @id @default(uuid())
+  estado       EstadoPago
+  monto        Float
+  fechaPago    DateTime   @default(now())
+  ventaId      String     @unique
+  metodoPagoId String
+  metodoPago   MetodoPago @relation(fields: [metodoPagoId], references: [id])
+  venta        Ventas     @relation(fields: [ventaId], references: [id])
+  isActive     Boolean    @default(true)
 }
 
 model MetodoPago {
@@ -81,8 +82,7 @@ model MetodoPago {
   proveedor String
   detalles  String
   metodo    Metodo
-  pagoId    String
-  pago      Pago    @relation(fields: [pagoId], references: [id])
+  pago      Pago[]
   isActive  Boolean @default(true)
 }
 
