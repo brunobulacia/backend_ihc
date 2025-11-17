@@ -14,6 +14,7 @@ import { DetalleVentaModule } from './detalle_venta/detalle_venta.module';
 import { CategoriasModule } from './categorias/categorias.module';
 import { ProductosCategoriasModule } from './productos_categorias/productos_categorias.module';
 import { CompraModule } from './transactions/realizar_compra/compra.module';
+import { TelegramModule } from './telegram/telegram.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { CompraModule } from './transactions/realizar_compra/compra.module';
     CategoriasModule,
     ProductosCategoriasModule,
     CompraModule,
+    TelegramModule,
   ],
   controllers: [],
   providers: [
