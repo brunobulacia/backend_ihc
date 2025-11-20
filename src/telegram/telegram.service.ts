@@ -6,6 +6,8 @@ import { firstValueFrom } from 'rxjs';
 export class TelegramService {
   private readonly logger = new Logger(TelegramService.name);
   private readonly apiBase: string;
+  private pendingRequests = 0;
+  private readonly maxConcurrentRequests = 3;
 
   constructor(private readonly http: HttpService) {
     const token = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN;
@@ -82,9 +84,7 @@ Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu
         const largest = photos[photos.length - 1];
         const fileId = largest.file_id;
         const fileInfo = await this.getFile(fileId);
-        const filePath = fileInfo?.result?.file_path;
-        this.logger.debug(`File path: ${filePath}`);
-        // si necesitás descargar -> https://api.telegram.org/file/bot<TOKEN>/<file_path>
+        // Solo log si hay error, no en casos normales
         await this.sendMessage(
           update.message.chat.id,
           'Foto recibida, gracias!',
@@ -92,38 +92,90 @@ Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu
         return;
       }
 
-      this.logger.debug(
-        'Tipo de update no manejado: ' + JSON.stringify(Object.keys(update)),
-      );
+      // Solo log para tipos realmente desconocidos, no para cada update
     } catch (err) {
-      this.logger.error('Error en processUpdate', err);
+      this.logger.error(
+        `Error en processUpdate: ${err.message || 'Unknown error'}`,
+      );
     }
   }
 
-  // helpers usando HttpService (axios)
+  // helpers usando HttpService (axios) con timeout y rate limiting
   private async sendMessage(
     chat_id: number | string,
     text: string,
     reply_markup?: any,
   ) {
+    // Rate limiting interno
+    if (this.pendingRequests >= this.maxConcurrentRequests) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+
     const url = `${this.apiBase}/sendMessage`;
     const payload: any = { chat_id, text };
     if (reply_markup) {
       payload.reply_markup = reply_markup;
     }
-    await firstValueFrom(this.http.post(url, payload));
+
+    this.pendingRequests++;
+    try {
+      await firstValueFrom(
+        this.http.post(url, payload, {
+          timeout: 10000, // 10 segundos timeout
+        }),
+      );
+    } catch (error) {
+      // Solo log si es un error crítico, no por rate limits menores
+      if (error?.response?.status !== 429) {
+        this.logger.error(
+          `Error sending message: ${error?.response?.status || error.message}`,
+        );
+      }
+      throw error;
+    } finally {
+      this.pendingRequests = Math.max(0, this.pendingRequests - 1);
+    }
   }
 
   private async answerCallbackQuery(callback_query_id: string, text?: string) {
     const url = `${this.apiBase}/answerCallbackQuery`;
-    await firstValueFrom(this.http.post(url, { callback_query_id, text }));
+    try {
+      await firstValueFrom(
+        this.http.post(
+          url,
+          { callback_query_id, text },
+          {
+            timeout: 5000, // 5 segundos timeout
+          },
+        ),
+      );
+    } catch (error) {
+      // Solo log errores críticos
+      if (error?.response?.status !== 429) {
+        this.logger.error(
+          `Error answering callback: ${error?.response?.status || error.message}`,
+        );
+      }
+    }
   }
 
   private async getFile(file_id: string) {
     const url = `${this.apiBase}/getFile`;
-    const response$ = this.http.get(url, { params: { file_id } });
-    const res = await firstValueFrom(response$);
-    return res.data;
+    try {
+      const response$ = this.http.get(url, {
+        params: { file_id },
+        timeout: 8000, // 8 segundos timeout
+      });
+      const res = await firstValueFrom(response$);
+      return res.data;
+    } catch (error) {
+      if (error?.response?.status !== 429) {
+        this.logger.error(
+          `Error getting file: ${error?.response?.status || error.message}`,
+        );
+      }
+      return null;
+    }
   }
 
   private async handleCallbackQuery(callbackQuery: any) {

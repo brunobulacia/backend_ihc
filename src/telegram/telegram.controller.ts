@@ -31,21 +31,23 @@ export class TelegramController {
     @Body() update: any,
     @Headers('x-telegram-bot-api-secret-token') secretHeader?: string,
   ) {
-    this.logger.log('Webhook endpoint alcanzado correctamente');
-
+    // Solo log si hay problema con el secret token
     const expected = process.env.WEBHOOK_SECRET;
     if (expected && secretHeader !== expected) {
       this.logger.warn('Secret token inválido en webhook');
-      // devuelve un body para logs, Telegram solo mira el status code
       return { ok: false, message: 'invalid secret' };
     }
 
-    this.logger.log('Secret token válido, procesando update');
-    this.logger.debug('Update recibido:', JSON.stringify(update, null, 2));
+    // Log mínimo solo con información esencial
+    if (update.message?.text || update.callback_query) {
+      const type = update.message?.text ? 'message' : 'callback';
+      const identifier = update.message?.text || update.callback_query?.data;
+      this.logger.log(`Webhook: ${type} - ${identifier}`);
+    }
 
     // Procesar inline — mantené lógica ligera
     this.telegramService.processUpdate(update).catch((err) => {
-      this.logger.error('Error procesando update:', err);
+      this.logger.error('Error procesando update:', err.message || err);
     });
 
     return { ok: true };
