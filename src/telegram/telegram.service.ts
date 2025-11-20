@@ -30,14 +30,16 @@ export class TelegramService {
 
 Comida deliciosa al instante
 
-Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu puerta de la manera más rápida y fácil posible.`;
+Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu puerta de la manera más rápida y fácil posible.
+
+🚀 Usa nuestra Mini App: https://t.me/CambaEats_bot/depl`;
 
           const inlineKeyboard = {
             inline_keyboard: [
               [
                 {
                   text: '🍽️ Explorar el Menú',
-                  web_app: { url: 'https://t.me/CambaEats_bot/depl' },
+                  url: 'https://t.me/CambaEats_bot/depl?startapp=menu',
                 },
               ],
               [
@@ -203,7 +205,7 @@ Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu
             [
               {
                 text: '🍽️ Ir al Menú',
-                web_app: { url: 'https://t.me/CambaEats_bot/depl' },
+                url: 'https://t.me/CambaEats_bot/depl?startapp=cart',
               },
             ],
           ],
@@ -230,7 +232,7 @@ Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu
             [
               {
                 text: '🍽️ Hacer un Pedido',
-                web_app: { url: 'https://t.me/CambaEats_bot/depl' },
+                url: 'https://t.me/CambaEats_bot/depl?startapp=orders',
               },
             ],
           ],
