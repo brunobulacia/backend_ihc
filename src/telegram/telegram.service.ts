@@ -24,10 +24,44 @@ export class TelegramService {
         const text = update.message.text.trim();
 
         if (text === '/start') {
-          await this.sendMessage(
-            chatId,
-            'Hola capo 😎, tu bot ya está conectado!',
-          );
+          const welcomeMessage = `¡Bienvenido a CambaEats! 🍕
+
+Comida deliciosa al instante
+
+Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu puerta de la manera más rápida y fácil posible.`;
+
+          const inlineKeyboard = {
+            inline_keyboard: [
+              [
+                {
+                  text: '🍽️ Explorar el Menú',
+                  web_app: { url: 'https://t.me/CambaEats_bot/depl' },
+                },
+              ],
+              [
+                {
+                  text: '📍 Mi Ubicación',
+                  callback_data: 'location',
+                },
+                {
+                  text: '🛒 Mi Carrito',
+                  callback_data: 'cart',
+                },
+              ],
+              [
+                {
+                  text: '📞 Soporte',
+                  callback_data: 'support',
+                },
+                {
+                  text: '🔄 Mis Pedidos',
+                  callback_data: 'orders',
+                },
+              ],
+            ],
+          };
+
+          await this.sendMessage(chatId, welcomeMessage, inlineKeyboard);
           return;
         }
 
@@ -38,8 +72,7 @@ export class TelegramService {
       // callback_query
       if (update.callback_query) {
         const cq = update.callback_query;
-        await this.answerCallbackQuery(cq.id, 'Recibido ✅');
-        await this.sendMessage(cq.from.id, `Presionaste: ${cq.data}`);
+        await this.handleCallbackQuery(cq);
         return;
       }
 
@@ -68,9 +101,17 @@ export class TelegramService {
   }
 
   // helpers usando HttpService (axios)
-  private async sendMessage(chat_id: number | string, text: string) {
+  private async sendMessage(
+    chat_id: number | string,
+    text: string,
+    reply_markup?: any,
+  ) {
     const url = `${this.apiBase}/sendMessage`;
-    await firstValueFrom(this.http.post(url, { chat_id, text }));
+    const payload: any = { chat_id, text };
+    if (reply_markup) {
+      payload.reply_markup = reply_markup;
+    }
+    await firstValueFrom(this.http.post(url, payload));
   }
 
   private async answerCallbackQuery(callback_query_id: string, text?: string) {
@@ -83,5 +124,70 @@ export class TelegramService {
     const response$ = this.http.get(url, { params: { file_id } });
     const res = await firstValueFrom(response$);
     return res.data;
+  }
+
+  private async handleCallbackQuery(callbackQuery: any) {
+    const chatId = callbackQuery.from.id;
+    const data = callbackQuery.data;
+
+    await this.answerCallbackQuery(callbackQuery.id);
+
+    switch (data) {
+      case 'location':
+        await this.sendMessage(
+          chatId,
+          '📍 Para establecer tu ubicación, comparte tu ubicación usando el botón de adjuntos en Telegram o escribe tu dirección.',
+        );
+        break;
+
+      case 'cart':
+        const cartKeyboard = {
+          inline_keyboard: [
+            [
+              {
+                text: '🍽️ Ir al Menú',
+                web_app: { url: 'https://t.me/CambaEats_bot/depl' },
+              },
+            ],
+          ],
+        };
+        await this.sendMessage(
+          chatId,
+          '🛒 Tu carrito está vacío\n\n¡Explora nuestro delicioso menú y agrega algunos productos!',
+          cartKeyboard,
+        );
+        break;
+
+      case 'support':
+        await this.sendMessage(
+          chatId,
+          '📞 **Soporte CambaEats**\n\n¿Necesitas ayuda? Estamos aquí para ti:\n\n• 📧 Email: soporte@cambaeats.com\n• 📱 WhatsApp: +591 123 456 789\n• 🕐 Horario: Lunes a Domingo 8:00 - 22:00\n\nTambién puedes escribir tu consulta aquí y te responderemos lo antes posible.',
+        );
+        break;
+
+      case 'orders':
+        const ordersKeyboard = {
+          inline_keyboard: [
+            [
+              {
+                text: '🍽️ Hacer un Pedido',
+                web_app: { url: 'https://t.me/CambaEats_bot/depl' },
+              },
+            ],
+          ],
+        };
+        await this.sendMessage(
+          chatId,
+          '🔄 **Mis Pedidos**\n\nAún no tienes pedidos realizados.\n\n¡Haz tu primer pedido y disfruta de nuestra deliciosa comida!',
+          ordersKeyboard,
+        );
+        break;
+
+      default:
+        await this.sendMessage(
+          chatId,
+          'Función en desarrollo. ¡Pronto estará disponible! 🚧',
+        );
+    }
   }
 }
