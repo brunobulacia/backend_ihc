@@ -40,26 +40,6 @@ Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu
                   url: 'https://t.me/CambaEats_bot/depl?startapp=menu',
                 },
               ],
-              [
-                {
-                  text: '📍 Mi Ubicación',
-                  callback_data: 'location',
-                },
-                {
-                  text: '🛒 Mi Carrito',
-                  callback_data: 'cart',
-                },
-              ],
-              [
-                {
-                  text: '📞 Soporte',
-                  callback_data: 'support',
-                },
-                {
-                  text: '🔄 Mis Pedidos',
-                  callback_data: 'orders',
-                },
-              ],
             ],
           };
 
