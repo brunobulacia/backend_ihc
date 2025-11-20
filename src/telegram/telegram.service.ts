@@ -105,6 +105,7 @@ Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu
     chat_id: number | string,
     text: string,
     reply_markup?: any,
+    parse_mode?: string,
   ) {
     // Rate limiting interno
     if (this.pendingRequests >= this.maxConcurrentRequests) {
@@ -116,6 +117,9 @@ Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu
     if (reply_markup) {
       payload.reply_markup = reply_markup;
     }
+    if (parse_mode) {
+      payload.parse_mode = parse_mode;
+    }
 
     this.pendingRequests++;
     try {
@@ -125,11 +129,12 @@ Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu
         }),
       );
     } catch (error) {
-      // Solo log si es un error crítico, no por rate limits menores
-      if (error?.response?.status !== 429) {
-        this.logger.error(
-          `Error sending message: ${error?.response?.status || error.message}`,
-        );
+      // Log más detallado para debug
+      this.logger.error(
+        `Error sending message: ${error?.response?.status || error.message}`,
+      );
+      if (error?.response?.data) {
+        this.logger.error('Telegram API error:', error.response.data);
       }
       throw error;
     } finally {
@@ -213,7 +218,9 @@ Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu
       case 'support':
         await this.sendMessage(
           chatId,
-          '📞 **Soporte CambaEats**\n\n¿Necesitas ayuda? Estamos aquí para ti:\n\n• 📧 Email: soporte@cambaeats.com\n• 📱 WhatsApp: +591 123 456 789\n• 🕐 Horario: Lunes a Domingo 8:00 - 22:00\n\nTambién puedes escribir tu consulta aquí y te responderemos lo antes posible.',
+          '📞 *Soporte CambaEats*\n\n¿Necesitas ayuda? Estamos aquí para ti:\n\n• 📧 Email: soporte@cambaeats.com\n• 📱 WhatsApp: +591 123 456 789\n• 🕐 Horario: Lunes a Domingo 8:00 - 22:00\n\nTambién puedes escribir tu consulta aquí y te responderemos lo antes posible.',
+          null,
+          'Markdown',
         );
         break;
 
@@ -230,8 +237,9 @@ Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu
         };
         await this.sendMessage(
           chatId,
-          '🔄 **Mis Pedidos**\n\nAún no tienes pedidos realizados.\n\n¡Haz tu primer pedido y disfruta de nuestra deliciosa comida!',
+          '🔄 *Mis Pedidos*\n\nAún no tienes pedidos realizados.\n\n¡Haz tu primer pedido y disfruta de nuestra deliciosa comida!',
           ordersKeyboard,
+          'Markdown',
         );
         break;
 
