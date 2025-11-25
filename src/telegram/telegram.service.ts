@@ -23,7 +23,11 @@ export class TelegramService {
       // mensajes de texto simples
       if (update.message && update.message.text) {
         const chatId = update.message.chat.id;
-        const chatUsername = update.message.chat.username || 'desconocido';
+        const user = update.message.from;
+        const chatUsername =
+          user.username ||
+          `${user.first_name}${user.last_name ? ' ' + user.last_name : ''}` ||
+          'desconocido';
         const text = update.message.text.trim();
 
         if (text === '/start') {
