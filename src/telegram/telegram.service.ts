@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class TelegramService {
@@ -9,7 +10,10 @@ export class TelegramService {
   private pendingRequests = 0;
   private readonly maxConcurrentRequests = 3;
 
-  constructor(private readonly http: HttpService) {
+  constructor(
+    private readonly http: HttpService,
+    private readonly usersService: UsersService,
+  ) {
     const token = process.env.TELEGRAM_BOT_TOKEN || process.env.BOT_TOKEN;
     this.apiBase = `https://api.telegram.org/bot${token}`;
     if (!token)
@@ -33,6 +37,18 @@ export class TelegramService {
         const userId = user.id;
 
         if (text === '/start') {
+          const user = await this.usersService.findOne(userId);
+
+          if (!user) {
+            const userCreated = await this.usersService.create({
+              id: userId,
+              username: chatUsername || '',
+              email: '',
+            });
+
+            this.logger.log(`Usuario creado: ${userCreated.id}`);
+          }
+
           const welcomeMessage = `¡Bienvenido a CambaEats! 🍕
 
 Comida deliciosa al instante
