@@ -23,6 +23,7 @@ export class TelegramService {
       // mensajes de texto simples
       if (update.message && update.message.text) {
         const chatId = update.message.chat.id;
+        const chatUsername = update.message.chat.username || 'desconocido';
         const text = update.message.text.trim();
 
         if (text === '/start') {
@@ -47,11 +48,13 @@ Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu
           return;
         }
 
-        Logger.log(`Texto recibido: ${text} de chatId: ${chatId}`);
+        this.logger.log(
+          `Received message: ${text} from chatId: ${chatId} (username: ${chatUsername})`,
+        );
 
         await this.sendMessage(
           chatId,
-          `Recibí tu mensaje: ${text}, tu chatId es: ${chatId}`,
+          `Recibí tu mensaje: ${text}, tu chatId es: ${chatId} y tu usuario es: @${chatUsername}`,
         );
         return;
       }
