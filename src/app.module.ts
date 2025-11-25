@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { UsersModule } from './users/users.module';
-import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { DireccionModule } from './direccion/direccion.module';
 import { VentasModule } from './ventas/ventas.module';
 import { PagosModule } from './pagos/pagos.module';
@@ -19,7 +17,6 @@ import { TelegramModule } from './telegram/telegram.module';
 @Module({
   imports: [
     UsersModule,
-    AuthModule,
     DireccionModule,
     VentasModule,
     PagosModule,
