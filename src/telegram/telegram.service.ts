@@ -47,7 +47,12 @@ Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu
           return;
         }
 
-        await this.sendMessage(chatId, `Recibí tu mensaje: ${text}`);
+        Logger.log(`Texto recibido: ${text} de chatId: ${chatId}`);
+
+        await this.sendMessage(
+          chatId,
+          `Recibí tu mensaje: ${text}, tu chatId es: ${chatId}`,
+        );
         return;
       }
 
