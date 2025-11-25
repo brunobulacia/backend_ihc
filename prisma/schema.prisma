@@ -58,8 +58,8 @@ model Ventas {
   estado        EstadoVenta
   total         Float
   fechaVenta    DateTime       @default(now())
-  chatId        String
-  chat          User           @relation(fields: [chatId], references: [id])
+  userId        String
+  user          User           @relation(fields: [userId], references: [id])
   pago          Pago?
   detalleVentas DetalleVenta[]
   isActive      Boolean        @default(true)
