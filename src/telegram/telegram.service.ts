@@ -30,6 +30,8 @@ export class TelegramService {
           'desconocido';
         const text = update.message.text.trim();
 
+        const userId = user.id;
+
         if (text === '/start') {
           const welcomeMessage = `¡Bienvenido a CambaEats! 🍕
 
@@ -53,12 +55,12 @@ Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu
         }
 
         this.logger.log(
-          `Received message: ${text} from chatId: ${chatId} (username: ${chatUsername})`,
+          `Received message: ${text} from chatId: ${chatId} (username: ${chatUsername}) userId: ${userId}`,
         );
 
         await this.sendMessage(
           chatId,
-          `Recibí tu mensaje: ${text}, tu chatId es: ${chatId} y tu usuario es: @${chatUsername}`,
+          `Recibí tu mensaje: ${text}, tu chatId es: ${chatId} y tu usuario es: @${chatUsername} (y tu userId es: ${userId})`,
         );
         return;
       }
