@@ -24,7 +24,7 @@ export class UsersService {
     });
 
     if (!foundUser) {
-      throw new NotFoundException(`User with id ${id} not found`);
+      return null;
     }
 
     return foundUser;
