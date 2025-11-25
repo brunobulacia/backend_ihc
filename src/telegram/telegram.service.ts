@@ -34,7 +34,7 @@ export class TelegramService {
           'desconocido';
         const text = update.message.text.trim();
 
-        const userId = user.id;
+        const userId = String(user.id);
 
         if (text === '/start') {
           const user = await this.usersService.findOne(userId);
