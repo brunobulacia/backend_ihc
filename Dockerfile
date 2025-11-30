@@ -35,14 +35,11 @@ RUN npm ci --only=production
 COPY --from=builder /usr/src/app/dist ./dist
 COPY --from=builder /usr/src/app/node_modules/.prisma ./node_modules/.prisma
 
-# Generate Prisma client for production
-RUN npx prisma generate
-
 # Expose port
 EXPOSE 8080
 
 # Set NODE_ENV to production
 ENV NODE_ENV=production
 
-# Run database migrations and start the application
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run start:prod"]
+# Start the application
+CMD ["node", "dist/main"]
