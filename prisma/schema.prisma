@@ -43,15 +43,31 @@ model Direccion {
 }
 
 model Pedido {
-  id              String          @id @default(uuid())
-  estado          EstadoPedido    @default(PENDIENTE)
-  total           Float
-  direccion       String?
-  fechaCreacion   DateTime        @default(now())
-  userId          String
-  user            User            @relation(fields: [userId], references: [id])
-  pago            Pago?
-  detallesPedido  DetallePedido[]
+  id                    String          @id @default(uuid())
+  estado                EstadoPedido    @default(PENDIENTE)
+  total                 Float
+  direccion             String?
+  fechaCreacion         DateTime        @default(now())
+  userId                String
+  user                  User            @relation(fields: [userId], references: [id])
+  conductorId           String?
+  conductor             Conductor?      @relation(fields: [conductorId], references: [id])
+  latitudDestino        Float?
+  longitudDestino       Float?
+  conductoresRechazados String[]        @default([])
+  pago                  Pago?
+  detallesPedido        DetallePedido[]
+}
+
+model Conductor {
+  id             String   @id @default(uuid())
+  nombre         String
+  latitud        Float    @default(-17.783300)
+  longitud       Float    @default(-63.182140)
+  disponible     Boolean  @default(true)
+  pedidos        Pedido[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model Pago {

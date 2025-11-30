@@ -11,6 +11,7 @@ import { DetallePedidoModule } from './detalle_pedido/detalle_pedido.module';
 import { CompraModule } from './transactions/realizar_compra/compra.module';
 import { TelegramModule } from './telegram/telegram.module';
 import { LogsModule } from './logs/logs.module';
+import { ConductoresModule } from './conductores/conductores.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { LogsModule } from './logs/logs.module';
     CompraModule,
     TelegramModule,
     LogsModule,
+    ConductoresModule,
   ],
   controllers: [],
   providers: [

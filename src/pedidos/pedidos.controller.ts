@@ -43,4 +43,37 @@ export class PedidosController {
   remove(@Param('id') id: string) {
     return this.pedidosService.remove(id);
   }
+
+  // Endpoints para conductores
+  @Post(':id/aceptar')
+  aceptarPedido(
+    @Param('id') id: string,
+    @Body() body: { conductorId: string },
+  ) {
+    return this.pedidosService.aceptarPedido(id, body.conductorId);
+  }
+
+  @Post(':id/rechazar')
+  rechazarPedido(
+    @Param('id') id: string,
+    @Body() body: { conductorId: string },
+  ) {
+    return this.pedidosService.rechazarPedido(id, body.conductorId);
+  }
+
+  @Post(':id/iniciar-viaje')
+  iniciarViaje(
+    @Param('id') id: string,
+    @Body() body: { conductorId: string },
+  ) {
+    return this.pedidosService.iniciarViaje(id, body.conductorId);
+  }
+
+  @Post(':id/entregar')
+  entregarPedido(
+    @Param('id') id: string,
+    @Body() body: { conductorId: string },
+  ) {
+    return this.pedidosService.entregarPedido(id, body.conductorId);
+  }
 }
