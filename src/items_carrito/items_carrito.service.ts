@@ -7,10 +7,19 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class ItemsCarritoService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  create(createItemsCarritoDto: CreateItemsCarritoDto) {
-    return this.prismaService.itemCarrito.create({
-      data: createItemsCarritoDto,
-    });
+  async create(createItemsCarritoDto: CreateItemsCarritoDto) {
+    // Log de entrada
+    console.log('[ItemsCarritoService] create() dto:', createItemsCarritoDto);
+    try {
+      const item = await this.prismaService.itemCarrito.create({
+        data: createItemsCarritoDto,
+      });
+      console.log('[ItemsCarritoService] Creado:', item);
+      return item;
+    } catch (error) {
+      console.error('[ItemsCarritoService] Error al crear item:', error);
+      throw error;
+    }
   }
 
   findAll() {

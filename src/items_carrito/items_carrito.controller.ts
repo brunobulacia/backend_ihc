@@ -8,16 +8,26 @@ import {
   Delete,
 } from '@nestjs/common';
 import { ItemsCarritoService } from './items_carrito.service';
+import { Logger } from '@nestjs/common';
 import type { CreateItemsCarritoDto } from './dto/create-items_carrito.dto';
 import type { UpdateItemsCarritoDto } from './dto/update-items_carrito.dto';
 
 @Controller('items-carrito')
 export class ItemsCarritoController {
+  private readonly logger = new Logger(ItemsCarritoController.name);
   constructor(private readonly itemsCarritoService: ItemsCarritoService) {}
 
   @Post()
-  create(@Body() createItemsCarritoDto: CreateItemsCarritoDto) {
-    return this.itemsCarritoService.create(createItemsCarritoDto);
+  async create(@Body() createItemsCarritoDto: CreateItemsCarritoDto) {
+    this.logger.log('POST /items-carrito', JSON.stringify(createItemsCarritoDto));
+    try {
+      const result = await this.itemsCarritoService.create(createItemsCarritoDto);
+      this.logger.log('ItemCarrito creado correctamente', JSON.stringify(result));
+      return result;
+    } catch (error) {
+      this.logger.error('Error al crear ItemCarrito', error?.message, error?.stack);
+      throw error;
+    }
   }
 
   @Get()
