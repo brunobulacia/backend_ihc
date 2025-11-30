@@ -15,13 +15,18 @@ export class PagosService {
 
   findAll() {
     return this.prismaService.pago.findMany({
-      where: { isActive: true },
+      include: {
+        pedido: true,
+      },
     });
   }
 
   findOne(id: string) {
     return this.prismaService.pago.findUnique({
-      where: { id, isActive: true },
+      where: { id },
+      include: {
+        pedido: true,
+      },
     });
   }
 
@@ -33,9 +38,8 @@ export class PagosService {
   }
 
   remove(id: string) {
-    return this.prismaService.pago.update({
+    return this.prismaService.pago.delete({
       where: { id },
-      data: { isActive: false },
     });
   }
 }

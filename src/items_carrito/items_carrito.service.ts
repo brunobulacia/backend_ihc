@@ -38,4 +38,19 @@ export class ItemsCarritoService {
       data: { isActive: false },
     });
   }
+
+  findByCarritoId(carritoId: string) {
+    return this.prismaService.itemCarrito.findMany({
+      where: { carritoId, isActive: true },
+      include: { producto: true },
+    });
+  }
+
+  deleteByCarritoId(carritoId: string) {
+    // Marcar todos los items del carrito como inactivos en vez de borrarlos físicamente
+    return this.prismaService.itemCarrito.updateMany({
+      where: { carritoId, isActive: true },
+      data: { isActive: false },
+    });
+  }
 }

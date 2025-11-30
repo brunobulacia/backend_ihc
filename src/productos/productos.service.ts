@@ -40,8 +40,8 @@ export class ProductosService {
   }
 
   //REALIZAR COMPRA SERVICES
-  async verificarProductosYStock(
-    productos: { productoId: string; cantidad: number }[],
+  async verificarProductos(
+    productos: { productoId: string; cantidad: number; precioUnit: number }[],
   ) {
     const productIds = productos.map((producto) => producto.productoId);
     const foundProducts = await this.prismaService.producto.findMany({
@@ -57,20 +57,6 @@ export class ProductosService {
       );
     }
 
-    // Verificar si cantidad no sobrepasa el stock disponible
-    const productosConStock = foundProducts.filter((producto) => {
-      const productoEnPedido = productos.find(
-        (p) => p.productoId === producto.id,
-      );
-      return producto.stock >= (productoEnPedido?.cantidad || 0);
-    });
-
-    if (productosConStock.length !== foundProducts.length) {
-      throw new NotFoundException(
-        'Algunos productos no tienen suficiente stock',
-      );
-    }
-
-    return productos;
+    return foundProducts;
   }
 }

@@ -43,7 +43,6 @@ export class TelegramService {
             const userCreated = await this.usersService.create({
               id: userId,
               username: chatUsername || '',
-              email: '',
             });
 
             this.logger.log(`Usuario creado: ${userCreated.id}`);

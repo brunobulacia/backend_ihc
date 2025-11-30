@@ -10,6 +10,7 @@ export class CarritosService {
   create(createCarritoDto: CreateCarritoDto) {
     return this.prismaService.carrito.create({
       data: createCarritoDto,
+      include: { itemCarrito: true },
     });
   }
 
@@ -22,6 +23,14 @@ export class CarritosService {
   findOne(id: string) {
     return this.prismaService.carrito.findUnique({
       where: { id, isActive: true },
+      include: { itemCarrito: true },
+    });
+  }
+
+  findByUserId(userId: string) {
+    return this.prismaService.carrito.findFirst({
+      where: { userId, isActive: true },
+      include: { itemCarrito: true },
     });
   }
 

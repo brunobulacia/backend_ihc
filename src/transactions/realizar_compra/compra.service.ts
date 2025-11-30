@@ -1,69 +1,102 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { CreateCompraDto } from './dto/create-compra.dto';
 import { UsersService } from 'src/users/users.service';
 import { ProductosService } from 'src/productos/productos.service';
+import { PedidosService } from 'src/pedidos/pedidos.service';
+import { DetallePedidoService } from 'src/detalle_pedido/detalle_pedido.service';
+import { PagosService } from 'src/pagos/pagos.service';
 import { CarritosService } from 'src/carritos/carritos.service';
 import { ItemsCarritoService } from 'src/items_carrito/items_carrito.service';
-import { VentasService } from 'src/ventas/ventas.service';
-import { DetalleVentaService } from 'src/detalle_venta/detalle_venta.service';
 
 @Injectable()
 export class CompraService {
   constructor(
     private readonly userService: UsersService,
     private readonly productoService: ProductosService,
-    private readonly carritoService: CarritosService,
+    private readonly pedidoService: PedidosService,
+    private readonly detallePedidoService: DetallePedidoService,
+    private readonly pagoService: PagosService,
+    private readonly carritosService: CarritosService,
     private readonly itemsCarritoService: ItemsCarritoService,
-    private readonly ventaService: VentasService,
-    private readonly detalleVentaService: DetalleVentaService,
   ) {}
 
   async realizarCompra(createCompraDto: CreateCompraDto) {
-    //1. VERIFICAR SI EL USUARIO EXISTE
-    const usuario = await this.userService.findOne(createCompraDto.userId);
+    const { userId, direccion } = createCompraDto;
+
+    // 1. VERIFICAR SI EL USUARIO EXISTE
+    const usuario = await this.userService.findOne(userId);
     if (!usuario) {
       throw new NotFoundException('Usuario no encontrado');
     }
 
-    // 2. VERIFICAR SI LOS PRODUCTOS EXISTEN Y SI TIENEN STOCK
-    const productos = await this.productoService.verificarProductosYStock(
-      createCompraDto.productos,
+    // 2. BUSCAR EL CARRITO DEL USUARIO
+    const carrito = await this.carritosService.findByUserId(userId);
+    if (!carrito) {
+      throw new NotFoundException('Usuario no tiene carrito');
+    }
+
+    // 3. OBTENER ITEMS DEL CARRITO
+    const itemsCarrito = await this.itemsCarritoService.findByCarritoId(carrito.id);
+    if (!itemsCarrito || itemsCarrito.length === 0) {
+      throw new BadRequestException('Carrito vacío');
+    }
+
+    // 4. TRANSFORMAR ITEMS Y VERIFICAR PRODUCTOS
+    const items = await Promise.all(
+      itemsCarrito.map(async (item) => {
+        const producto = await this.productoService.findOne(item.productoId);
+        if (!producto) {
+          throw new NotFoundException(`Producto ${item.productoId} no encontrado`);
+        }
+        return {
+          productoId: producto.id,
+          cantidad: item.cantidad,
+          precioUnit: producto.precio, // Precio actual del producto
+        };
+      })
     );
 
-    // 3. CREAR CARRITO SI LOS PRODUCTOS SON VALIDOS Y TIENEN STOCK
-    const carrito = await this.carritoService.create({ userId: usuario.id });
+    // 5. CALCULAR TOTAL DEL PEDIDO
+    const totalPedido = items.reduce(
+      (sum, item) => sum + item.cantidad * item.precioUnit,
+      0
+    );
 
-    // 4. AGREGAR PRODUCTOS AL CARRITO
-    for (const producto of createCompraDto.productos) {
-      await this.itemsCarritoService.create({
-        carritoId: carrito.id,
-        productoId: producto.productoId,
-        cantidad: producto.cantidad,
-      });
-    }
-
-    // 4.1. CALCULAR TOTAL DE LA VENTA (YA ME DIÓ PAJA)
-    let totalVenta = 0;
-
-    // 5. CREAR VENTA CON EL MONTO TOTAL
-    const createdVenta = await this.ventaService.create({
+    // 6. CREAR PEDIDO
+    const createdPedido = await this.pedidoService.create({
       userId: usuario.id,
       estado: 'PENDIENTE',
-      total: totalVenta,
+      total: totalPedido,
+      direccion,
     });
 
-    // 6. CREAR EL DETALLE DE VENTA CON LA VENTA CREADA (YA ME DIÓ PAJA)
-    for (const producto of createCompraDto.productos) {
-    }
+    // 7. CREAR DETALLES DEL PEDIDO
+    await Promise.all(
+      items.map((item) =>
+        this.detallePedidoService.create({
+          pedidoId: createdPedido.id,
+          productoId: item.productoId,
+          cantidad: item.cantidad,
+          precioUnit: item.precioUnit,
+        })
+      )
+    );
 
-    // 7. ACTUALIZAR EL MONTO TOTAL EN LA VENTA
-    await this.ventaService.update(createdVenta.id, { total: totalVenta });
+    // 8. CREAR PAGO (simulado con QR)
+    await this.pagoService.create({
+      pedidoId: createdPedido.id,
+      monto: totalPedido,
+      metodo: 'QR',
+    });
 
-    // 8. RETORNAR CONFIRMACIÓN DE COMPRA
+    // 9. LIMPIAR CARRITO DEL USUARIO
+    await this.itemsCarritoService.deleteByCarritoId(carrito.id);
+
+    // 10. RETORNAR CONFIRMACIÓN DE COMPRA
     return {
-      message: 'Procede a pagar la compra',
-      ventaId: createdVenta.id,
-      total: totalVenta,
+      message: 'Pedido creado exitosamente',
+      pedidoId: createdPedido.id,
+      total: totalPedido,
     };
   }
 }
