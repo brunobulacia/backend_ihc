@@ -59,7 +59,9 @@ Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu
               [
                 {
                   text: '🍽️ Explorar el Menú',
-                  url: `https://t.me/CambaEats_bot/depl?startapp=${userId}`,
+                  web_app: {
+                    url: `https://frontend-ihc.vercel.app/menu?userId=${userId}`,
+                  },
                 },
               ],
             ],
@@ -207,12 +209,15 @@ Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu
         break;
 
       case 'cart':
+        const userId = String(callbackQuery.from.id);
         const cartKeyboard = {
           inline_keyboard: [
             [
               {
                 text: '🍽️ Ir al Menú',
-                url: 'https://t.me/CambaEats_bot/depl?startapp=cart',
+                web_app: {
+                  url: `https://frontend-ihc.vercel.app/menu?userId=${userId}`,
+                },
               },
             ],
           ],
@@ -234,12 +239,15 @@ Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu
         break;
 
       case 'orders':
+        const userIdOrders = String(callbackQuery.from.id);
         const ordersKeyboard = {
           inline_keyboard: [
             [
               {
                 text: '🍽️ Hacer un Pedido',
-                url: 'https://t.me/CambaEats_bot/depl?startapp=orders',
+                web_app: {
+                  url: `https://frontend-ihc.vercel.app/menu?userId=${userIdOrders}`,
+                },
               },
             ],
           ],
