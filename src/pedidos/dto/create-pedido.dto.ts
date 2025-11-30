@@ -1,6 +1,15 @@
-import { Pedido, EstadoPedido } from '@prisma/client';
+import { EstadoPedido } from '@prisma/client';
 
-export type CreatePedidoDto = Omit<Pedido, 'id' | 'fechaCreacion'>;
+export interface CreatePedidoDto {
+  userId: string;
+  estado: EstadoPedido;
+  total: number;
+  direccion: string;
+  conductorId?: string;
+  latitudDestino?: number;
+  longitudDestino?: number;
+  conductoresRechazados?: string[];
+}
 
 // DTO extendido para cuando el frontend crea pedidos con items
 export interface CreatePedidoConItemsDto {

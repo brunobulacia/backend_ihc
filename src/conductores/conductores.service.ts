@@ -74,6 +74,8 @@ export class ConductoresService {
 
   // Encontrar conductor más cercano disponible (excluyendo los que rechazaron)
   async encontrarConductorMasCercano(
+    latitudDestino: number,
+    longitudDestino: number,
     conductoresRechazados: string[] = [],
   ): Promise<string | null> {
     const conductoresDisponibles = await this.prisma.conductor.findMany({
@@ -89,21 +91,21 @@ export class ConductoresService {
       return null;
     }
 
-    // Calcular distancia de cada conductor al restaurante
+    // Calcular distancia de cada conductor al destino del pedido
     let conductorMasCercano = conductoresDisponibles[0];
     let distanciaMinima = this.calcularDistancia(
-      RESTAURANTE_LAT,
-      RESTAURANTE_LNG,
       conductorMasCercano.latitud,
       conductorMasCercano.longitud,
+      latitudDestino,
+      longitudDestino,
     );
 
     for (const conductor of conductoresDisponibles.slice(1)) {
       const distancia = this.calcularDistancia(
-        RESTAURANTE_LAT,
-        RESTAURANTE_LNG,
         conductor.latitud,
         conductor.longitud,
+        latitudDestino,
+        longitudDestino,
       );
 
       if (distancia < distanciaMinima) {

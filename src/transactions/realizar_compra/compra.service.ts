@@ -70,7 +70,10 @@ export class CompraService {
       direccion,
     });
 
-    // 7. CREAR DETALLES DEL PEDIDO
+    // 7. ASIGNAR CONDUCTOR MÁS CERCANO
+    await this.pedidoService.asignarConductor(createdPedido.id);
+
+    // 8. CREAR DETALLES DEL PEDIDO
     await Promise.all(
       items.map((item) =>
         this.detallePedidoService.create({
