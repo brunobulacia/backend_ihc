@@ -36,10 +36,8 @@ export class PedidosService {
       return;
     }
 
-    // Encontrar conductor más cercano al destino del pedido
+    // Encontrar conductor más cercano al RESTAURANTE
     const conductorId = await this.conductoresService.encontrarConductorMasCercano(
-      pedido.latitudDestino ?? -17.783300, // Default: Catedral SCZ
-      pedido.longitudDestino ?? -63.182140,
       pedido.conductoresRechazados,
     );
 
