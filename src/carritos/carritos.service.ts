@@ -34,6 +34,28 @@ export class CarritosService {
     });
   }
 
+  async findOrCreateByUserId(userId: string) {
+    // Buscar carrito activo existente
+    let carrito = await this.prismaService.carrito.findFirst({
+      where: { userId, isActive: true },
+      include: { 
+        itemCarrito: {
+          where: { isActive: true }
+        } 
+      },
+    });
+
+    // Si no existe o está vacío después de un pedido, crear uno nuevo
+    if (!carrito) {
+      carrito = await this.prismaService.carrito.create({
+        data: { userId },
+        include: { itemCarrito: true },
+      });
+    }
+
+    return carrito;
+  }
+
   update(id: string, updateCarritoDto: UpdateCarritoDto) {
     return this.prismaService.carrito.update({
       where: { id, isActive: true },

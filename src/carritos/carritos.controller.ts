@@ -25,6 +25,11 @@ export class CarritosController {
     return this.carritosService.findAll();
   }
 
+  @Get('user/:userId')
+  findOrCreateByUserId(@Param('userId') userId: string) {
+    return this.carritosService.findOrCreateByUserId(userId);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.carritosService.findOne(id);
