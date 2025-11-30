@@ -59,7 +59,7 @@ Selecciona tu ubicación, ordena tu pedido desde nuestro menú y recíbelo en tu
               [
                 {
                   text: '🍽️ Explorar el Menú',
-                  url: 'https://t.me/CambaEats_bot/depl?startapp=menu',
+                  url: `https://t.me/CambaEats_bot/depl?startapp=${userId}`,
                 },
               ],
             ],
